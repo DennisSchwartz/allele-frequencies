@@ -65,7 +65,7 @@ If you have any problem or suggestion please open an issue [here](https://github
 
 The MIT License
 
-Copyright (c) 2015, Dennis Schwartz
+Copyright (c) 2016, Dennis Schwartz
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
