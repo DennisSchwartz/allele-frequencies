@@ -1,4 +1,4 @@
-# Allele Frequency calculation
+# allele frequency calculation
 
 This module will calculate the allele frequencies of a sequence from a list of variations, a reference sequence, a genomic range and a list of samples.
 
