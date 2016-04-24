@@ -5,7 +5,7 @@
  * This first attempt assumes correctness of the input format and that the original query is available.
  */
 
-
+var fs = require('fs');
 /*
    Return from variant query. In this case as a string?
  */
@@ -66,27 +66,65 @@ var refs = "TGGAAGTGTTTGCTACCAAGTTTATTTGCAGTGTTAACAGCACAACATTTACAAAACGTATTTTGTAC
 
 
 var range = 'Chr17:41,196,312-41,197,819';
-var start = parseInt(range.match(/:(.*)-/)[1]); // [1] to return only matching group
-var end = parseInt(range.match(/-(.*)$/)[1]);
+var start = range.match(/:(.*)-/)[1]; // [1] to return only matching group
+start = parseInt(start.split(',').join('')); // Convert string with commas into integer
+var end = range.match(/-(.*)$/)[1];
+end = parseInt(end.split(',').join(''));
+
 
 // Initialize output:
 var count = {};
-for ( var i = 1; i <= refs.length; i++ ) {
+for ( var i = 0; i < refs.length; i++ ) {
     count[i + start] = { A: 0, C: 0, G: 0, T: 0 };
-    count[i + start][refs[i - 1]]++; // Add 1 for the base in ref
+    count[i + start][refs[i]] = 2; // Add 1 for the base in ref
 }
 
-console.log(count);
 // Split input into lines
 var lines = variants.split('\n');
 // Remove header line
-var header = 'id ' + lines.shift();
+var header = lines.shift();
+header = header.split(/\s+/);
+header.unshift('id');
 
 while (lines.length > 0) {
     // Split lines on whitespace
     var l = lines.shift().split(/\s+/);
-    l.shift();
+    while ( l[0] === '') l.shift(); // remove empty fields from beginning of line
     // Skip empty lines
-    if (l.length < 8) continue;
-    console.log(l);
+    if (l.length < 7) continue;
+    var alt = l[header.indexOf('alt')]; // This allows for a different column order
+    var nalt = parseInt(l[header.indexOf('nalt')]);
+    var ref = l[header.indexOf('ref')];
+    var nref = parseInt(nalt > 0 ? l[header.indexOf('nref')] : 2);
+    var pos = parseInt(l[header.indexOf('pos')]);
+    count[pos][alt] += nalt;
+    count[pos][ref] += nref;
+}
+
+/*
+    Create output from count
+ */
+
+var ws = fs.createWriteStream('output.txt');
+ws.write('pos   A   C   G   T\n');
+// Sort keys for proper order:
+var sortf = function (a, b) {
+    return a - b;
+};
+var positions = Object.keys(count).sort(sortf);
+for ( i = 1; i <= positions.length; i++ ) {
+    var currentCount = count[positions[i - 1]];
+    var sum = 0;
+    for (el in currentCount) {
+        if (currentCount.hasOwnProperty(el)) {
+            sum += currentCount[el];
+        }
+    }
+    if (sum > 2) console.log(positions[i - 1] - start, currentCount);
+    var outStr = i +
+        ' ' + (currentCount['A'] / sum) +
+        ' ' + (currentCount['C'] / sum) +
+        ' ' + (currentCount['T'] / sum) +
+        ' ' + (currentCount['G'] / sum) + ' ' + sum + '\n';
+    ws.write(outStr);
 }
