@@ -45,8 +45,8 @@ var samples = "1,2,3,5,6,10".split(',');
 
 var counter = new alleleFreq(samples, range, refs, variants);
 counter.read();
-counter.count();
-counter.write("allele-freq-output.txt");
+counter.calculateFrequencies();
+counter.writeToFile("allele-freq-output.txt");
 
 console.log(counter.getFrequencies()[97]);
 console.log(counter.getFrequencies()[530]);
