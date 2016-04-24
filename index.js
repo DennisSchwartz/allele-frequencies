@@ -71,14 +71,6 @@ start = parseInt(start.split(',').join('')); // Convert string with commas into 
 var end = range.match(/-(.*)$/)[1];
 end = parseInt(end.split(',').join(''));
 
-
-// Initialize output:
-var count = {};
-for ( var i = 0; i < refs.length; i++ ) {
-    count[i + start] = { A: 0, C: 0, G: 0, T: 0 };
-    count[i + start][refs[i]] = 2; // Add 1 for the base in ref
-}
-
 // Split input into lines
 var lines = variants.split('\n');
 // Remove header line
@@ -86,6 +78,8 @@ var header = lines.shift();
 header = header.split(/\s+/);
 header.unshift('id');
 
+var alternatePositions = [];
+var vars = {};
 while (lines.length > 0) {
     // Split lines on whitespace
     var l = lines.shift().split(/\s+/);
@@ -97,9 +91,26 @@ while (lines.length > 0) {
     var ref = l[header.indexOf('ref')];
     var nref = parseInt(nalt > 0 ? l[header.indexOf('nref')] : 2);
     var pos = parseInt(l[header.indexOf('pos')]);
-    count[pos][alt] += nalt;
-    count[pos][ref] += nref;
+    alternatePositions.push(pos);
+    console.log("pos:", pos - start);
+    if (!vars[pos]) vars[pos] = { A: 0, C: 0, G: 0, T: 0 }; // Create new entry if not available
+    vars[pos][alt] += nalt;
+    vars[pos][ref] += nref;
 }
+
+console.log(vars);
+// Iterate over all bases in range
+var count = {};
+for ( var i = start; i <= end; i++ ) {
+    // If there is no variant entry for this position, set it two homozygous refseq
+    count[i] = { A: 0, C: 0, G: 0, T: 0 }; // Initialise count
+    if (!vars[i]) {
+        count[i][refs[i - start]] = 2;
+    } else {
+        count[i] = vars[i];
+    }
+}
+
 
 /*
     Create output from count
@@ -128,3 +139,14 @@ for ( i = 1; i <= positions.length; i++ ) {
         ' ' + (currentCount['G'] / sum) + ' ' + sum + '\n';
     ws.write(outStr);
 }
+
+//// Initialize output:
+//var count = {};
+//for ( var i = 0; i < refs.length; i++ ) {
+//    count[i + start] = { A: 0, C: 0, G: 0, T: 0 };
+//    count[i + start][refs[i]] = 2; // Add 1 for the base in ref
+//}
+//
+
+//
+
