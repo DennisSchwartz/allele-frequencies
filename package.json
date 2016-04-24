@@ -1,11 +1,15 @@
 {
   "name": "allele-frequency",
   "version": "0.0.1",
-  "description": "Calculates allele frequency ",
+  "description": "Calculates allele frequencies from a set of variants",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "Dennis Schwartz",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5"
+  }
 }

@@ -1,8 +1,6 @@
 /**
  * Created by ds on 24/04/2016.
  *
- * This will calculate the allele frequencies in the given output from a variants database.
- * This first attempt assumes correctness of the input format and that the original query is available.
  */
 
 var fs = require('fs');
@@ -45,96 +43,11 @@ var range = 'Chr17:41,196,312-41,197,819';
 var samples = "1,2,3,5,6,10".split(',');
 
 
-var counter = new alleleFreq(range, variants, refs, samples);
+var counter = new alleleFreq(samples, range, refs, variants);
 counter.read();
 counter.count();
-counter.write();
+counter.write("allele-freq-output.txt");
 
 console.log(counter.getFrequencies()[97]);
-console.log(counter.getFrequencies()['530']);
-console.log(counter.getFrequencies()['963']);
-
-//var start = range.match(/:(.*)-/)[1]; // [1] to return only matching group
-//start = parseInt(start.split(',').join('')); // Convert string with commas into integer
-//var end = range.match(/-(.*)$/)[1];
-//end = parseInt(end.split(',').join(''));
-//
-//// Split input into lines
-//var lines = variants.split('\n');
-//// Remove header line
-//var header = lines.shift();
-//header = header.split(/\s+/);
-//header.unshift('id');
-//
-//var alternatePositions = [];
-//var vars = {};
-//while (lines.length > 0) {
-//    // Split lines on whitespace
-//    var l = lines.shift().split(/\s+/);
-//    while ( l[0] === '') l.shift(); // remove empty fields from beginning of line
-//    // Skip empty lines
-//    if (l.length < 7) continue;
-//    var alt = l[header.indexOf('alt')]; // This allows for a different column order
-//    var nalt = parseInt(l[header.indexOf('nalt')]);
-//    var ref = l[header.indexOf('ref')];
-//    var nref = parseInt(nalt > 0 ? l[header.indexOf('nref')] : 2);
-//    var pos = parseInt(l[header.indexOf('pos')]);
-//    alternatePositions.push(pos);
-//    console.log("pos:", pos - start);
-//    if (!vars[pos]) vars[pos] = { A: 0, C: 0, G: 0, T: 0 }; // Create new entry if not available
-//    vars[pos][alt] += nalt;
-//    vars[pos][ref] += nref;
-//}
-//
-//console.log(vars);
-//// Iterate over all bases in range
-//var count = {};
-//for ( var i = start; i <= end; i++ ) {
-//    // If there is no variant entry for this position, set it two homozygous refseq
-//    count[i] = { A: 0, C: 0, G: 0, T: 0 }; // Initialise count
-//    if (!vars[i]) {
-//        count[i][refs[i - start]] = 2;
-//    } else {
-//        count[i] = vars[i];
-//    }
-//}
-//
-
-/*
-    Create output from count
- */
-
-//var ws = fs.createWriteStream('output.txt');
-//ws.write('pos   A   C   G   T\n');
-//// Sort keys for proper order:
-//var sortf = function (a, b) {
-//    return a - b;
-//};
-//var positions = Object.keys(count).sort(sortf);
-//for ( i = 1; i <= positions.length; i++ ) {
-//    var currentCount = count[positions[i - 1]];
-//    var sum = 0;
-//    for (el in currentCount) {
-//        if (currentCount.hasOwnProperty(el)) {
-//            sum += currentCount[el];
-//        }
-//    }
-//    if (sum > 2) console.log(positions[i - 1] - start, currentCount);
-//    var outStr = i +
-//        ' ' + (currentCount['A'] / sum) +
-//        ' ' + (currentCount['C'] / sum) +
-//        ' ' + (currentCount['T'] / sum) +
-//        ' ' + (currentCount['G'] / sum) + ' ' + sum + '\n';
-//    ws.write(outStr);
-//}
-//
-////// Initialize output:
-////var count = {};
-////for ( var i = 0; i < refs.length; i++ ) {
-////    count[i + start] = { A: 0, C: 0, G: 0, T: 0 };
-////    count[i + start][refs[i]] = 2; // Add 1 for the base in ref
-////}
-////
-//
-////
-
+console.log(counter.getFrequencies()[530]);
+console.log(counter.getFrequencies()[963]);
