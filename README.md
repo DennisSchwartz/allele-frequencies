@@ -5,6 +5,10 @@ This module will calculate the allele frequencies of a sequence from a list of v
 ## Installation 
 
 Clone the repository and run `npm install`.
+
+## Testing
+
+`npm test` will run the mocha tests for the package.
   
 ## Usage
 
