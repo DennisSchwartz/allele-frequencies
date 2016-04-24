@@ -70,11 +70,13 @@ var start = parseInt(range.match(/:(.*)-/)[1]); // [1] to return only matching g
 var end = parseInt(range.match(/-(.*)$/)[1]);
 
 // Initialize output:
-var count = [['pos', 'A', 'C', 'G', 'T']];
+var count = {};
 for ( var i = 1; i <= refs.length; i++ ) {
-    count.push([i, 0, 0, 0, 0]);
+    count[i + start] = { A: 0, C: 0, G: 0, T: 0 };
+    count[i + start][refs[i - 1]]++; // Add 1 for the base in ref
 }
 
+console.log(count);
 // Split input into lines
 var lines = variants.split('\n');
 // Remove header line
