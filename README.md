@@ -14,13 +14,17 @@ Import the AlleleFreq function into your script using
 
 Create an instance of the calculator and count the frequencies: 
 
-`var freqCalculator = new AF(samples, range, refs, vars);
+```javascript
+var freqCalculator = new AF(samples, range, refs, vars);
 freqCalculator.read(); // This will read the input
-freqCalculator.count; // This will create the frequency table`
+freqCalculator.count; // This will create the frequency table
+```
 
 The frequencies can be returned in two ways:
-`var freq = freqCalculator.getFrequencies(); // Will return freqs as an object
-freqCalculator.write(path);                  // Will write results to file at path. Default path exists.`
+```javascript
+var freq = freqCalculator.getFrequencies(); // Will return freqs as an object
+freqCalculator.write(path);                  // Will write results to file at path. Default path exists.
+```
 
 
 The instantiation requires the Sample IDs, the range, a reference sequence and the list of variants.
@@ -39,7 +43,8 @@ reference (i.e., nalt>0).
 
 For example: 
 
-`  sid   cid      pos alt nalt ref nref
+``` 
+sid   cid      pos alt nalt ref nref
 1   1 chr17 41196408   A    1   G    1
 2   1 chr17 41197274   A    1   C    1
 3   2 chr17 41196841   T    1   G    1
@@ -48,7 +53,8 @@ For example:
 6   6 chr17 41196408   A    1   G    1
 7   6 chr17 41197274   A    1   C    1
 8  10 chr17 41196408   A    1   G    1
-9  10 chr17 41197274   A    1   C    1`
+9  10 chr17 41197274   A    1   C    1
+```
 
 
 ## Support
