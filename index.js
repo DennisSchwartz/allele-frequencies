@@ -6,6 +6,8 @@
  */
 
 var fs = require('fs');
+var alleleFreq = require('./lib/allele-frequencies');
+
 /*
    Return from variant query. In this case as a string?
  */
@@ -19,32 +21,6 @@ var variants = 'sid   cid      pos      alt nalt ref nref\n\
             7    6   chr17   41197274   A    1   C    1\n\
             8   10   chr17   41196408   A    1   G    1\n\
             9   10   chr17   41197274   A    1   C    1';
-
-/*
-    Can I assume variants come as a JSON encoded JS object?
- */
-
-var variantsObject = {
-    1: {
-        sid: 1,
-        cid: "chr17",
-        pos: 41196408,
-        alt: "A",
-        nalt: 1,
-        ref: "G",
-        nnref: 1
-    },
-    2: {
-        sid: 1,
-        cid: "chr17",
-        pos: 41197274,
-        alt: "A",
-        nalt: 1,
-        ref: "C",
-        nnref: 1
-    }
-};
-
 
 /*
     Reference sequence
@@ -66,87 +42,99 @@ var refs = "TGGAAGTGTTTGCTACCAAGTTTATTTGCAGTGTTAACAGCACAACATTTACAAAACGTATTTTGTAC
 
 
 var range = 'Chr17:41,196,312-41,197,819';
-var start = range.match(/:(.*)-/)[1]; // [1] to return only matching group
-start = parseInt(start.split(',').join('')); // Convert string with commas into integer
-var end = range.match(/-(.*)$/)[1];
-end = parseInt(end.split(',').join(''));
+var samples = "1,2,3,5,6,10".split(',');
 
-// Split input into lines
-var lines = variants.split('\n');
-// Remove header line
-var header = lines.shift();
-header = header.split(/\s+/);
-header.unshift('id');
 
-var alternatePositions = [];
-var vars = {};
-while (lines.length > 0) {
-    // Split lines on whitespace
-    var l = lines.shift().split(/\s+/);
-    while ( l[0] === '') l.shift(); // remove empty fields from beginning of line
-    // Skip empty lines
-    if (l.length < 7) continue;
-    var alt = l[header.indexOf('alt')]; // This allows for a different column order
-    var nalt = parseInt(l[header.indexOf('nalt')]);
-    var ref = l[header.indexOf('ref')];
-    var nref = parseInt(nalt > 0 ? l[header.indexOf('nref')] : 2);
-    var pos = parseInt(l[header.indexOf('pos')]);
-    alternatePositions.push(pos);
-    console.log("pos:", pos - start);
-    if (!vars[pos]) vars[pos] = { A: 0, C: 0, G: 0, T: 0 }; // Create new entry if not available
-    vars[pos][alt] += nalt;
-    vars[pos][ref] += nref;
-}
+var counter = new alleleFreq(range, variants, refs, samples);
+counter.read();
+counter.count();
+counter.write();
 
-console.log(vars);
-// Iterate over all bases in range
-var count = {};
-for ( var i = start; i <= end; i++ ) {
-    // If there is no variant entry for this position, set it two homozygous refseq
-    count[i] = { A: 0, C: 0, G: 0, T: 0 }; // Initialise count
-    if (!vars[i]) {
-        count[i][refs[i - start]] = 2;
-    } else {
-        count[i] = vars[i];
-    }
-}
+console.log(counter.getFrequencies()[97]);
+console.log(counter.getFrequencies()['530']);
+console.log(counter.getFrequencies()['963']);
 
+//var start = range.match(/:(.*)-/)[1]; // [1] to return only matching group
+//start = parseInt(start.split(',').join('')); // Convert string with commas into integer
+//var end = range.match(/-(.*)$/)[1];
+//end = parseInt(end.split(',').join(''));
+//
+//// Split input into lines
+//var lines = variants.split('\n');
+//// Remove header line
+//var header = lines.shift();
+//header = header.split(/\s+/);
+//header.unshift('id');
+//
+//var alternatePositions = [];
+//var vars = {};
+//while (lines.length > 0) {
+//    // Split lines on whitespace
+//    var l = lines.shift().split(/\s+/);
+//    while ( l[0] === '') l.shift(); // remove empty fields from beginning of line
+//    // Skip empty lines
+//    if (l.length < 7) continue;
+//    var alt = l[header.indexOf('alt')]; // This allows for a different column order
+//    var nalt = parseInt(l[header.indexOf('nalt')]);
+//    var ref = l[header.indexOf('ref')];
+//    var nref = parseInt(nalt > 0 ? l[header.indexOf('nref')] : 2);
+//    var pos = parseInt(l[header.indexOf('pos')]);
+//    alternatePositions.push(pos);
+//    console.log("pos:", pos - start);
+//    if (!vars[pos]) vars[pos] = { A: 0, C: 0, G: 0, T: 0 }; // Create new entry if not available
+//    vars[pos][alt] += nalt;
+//    vars[pos][ref] += nref;
+//}
+//
+//console.log(vars);
+//// Iterate over all bases in range
+//var count = {};
+//for ( var i = start; i <= end; i++ ) {
+//    // If there is no variant entry for this position, set it two homozygous refseq
+//    count[i] = { A: 0, C: 0, G: 0, T: 0 }; // Initialise count
+//    if (!vars[i]) {
+//        count[i][refs[i - start]] = 2;
+//    } else {
+//        count[i] = vars[i];
+//    }
+//}
+//
 
 /*
     Create output from count
  */
 
-var ws = fs.createWriteStream('output.txt');
-ws.write('pos   A   C   G   T\n');
-// Sort keys for proper order:
-var sortf = function (a, b) {
-    return a - b;
-};
-var positions = Object.keys(count).sort(sortf);
-for ( i = 1; i <= positions.length; i++ ) {
-    var currentCount = count[positions[i - 1]];
-    var sum = 0;
-    for (el in currentCount) {
-        if (currentCount.hasOwnProperty(el)) {
-            sum += currentCount[el];
-        }
-    }
-    if (sum > 2) console.log(positions[i - 1] - start, currentCount);
-    var outStr = i +
-        ' ' + (currentCount['A'] / sum) +
-        ' ' + (currentCount['C'] / sum) +
-        ' ' + (currentCount['T'] / sum) +
-        ' ' + (currentCount['G'] / sum) + ' ' + sum + '\n';
-    ws.write(outStr);
-}
-
-//// Initialize output:
-//var count = {};
-//for ( var i = 0; i < refs.length; i++ ) {
-//    count[i + start] = { A: 0, C: 0, G: 0, T: 0 };
-//    count[i + start][refs[i]] = 2; // Add 1 for the base in ref
+//var ws = fs.createWriteStream('output.txt');
+//ws.write('pos   A   C   G   T\n');
+//// Sort keys for proper order:
+//var sortf = function (a, b) {
+//    return a - b;
+//};
+//var positions = Object.keys(count).sort(sortf);
+//for ( i = 1; i <= positions.length; i++ ) {
+//    var currentCount = count[positions[i - 1]];
+//    var sum = 0;
+//    for (el in currentCount) {
+//        if (currentCount.hasOwnProperty(el)) {
+//            sum += currentCount[el];
+//        }
+//    }
+//    if (sum > 2) console.log(positions[i - 1] - start, currentCount);
+//    var outStr = i +
+//        ' ' + (currentCount['A'] / sum) +
+//        ' ' + (currentCount['C'] / sum) +
+//        ' ' + (currentCount['T'] / sum) +
+//        ' ' + (currentCount['G'] / sum) + ' ' + sum + '\n';
+//    ws.write(outStr);
 //}
 //
-
+////// Initialize output:
+////var count = {};
+////for ( var i = 0; i < refs.length; i++ ) {
+////    count[i + start] = { A: 0, C: 0, G: 0, T: 0 };
+////    count[i + start][refs[i]] = 2; // Add 1 for the base in ref
+////}
+////
 //
+////
 
