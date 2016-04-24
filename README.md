@@ -14,20 +14,22 @@ Clone the repository and run `npm install`.
 
 Import the AlleleFreq function into your script using
 
-`var AF = require('./lib/allele-frequencies') // The path to the allele-frequencies.js file`
+```javascript
+var AF = require('./lib/allele-frequencies');          // The path to the allele-frequencies.js file
+```
 
 Create an instance of the calculator and calculateFrequencies the frequencies: 
 
 ```javascript
 var freqCalculator = new AF(samples, range, refs, vars);
-freqCalculator.read(); // This will read the input
-freqCalculator.calculateFrequencies; // This will create the frequency table
+freqCalculator.read();                                  // This will read the input
+freqCalculator.calculateFrequencies;                    // This will create the frequency table
 ```
 
 The frequencies can be returned in two ways:
 ```javascript
-var freq = freqCalculator.getFrequencies(); // Will return freqs as an object
-freqCalculator.writeToFile(path);                  // Will writeToFile results to file at path. Default path exists.
+var freq = freqCalculator.getFrequencies();             // Will return frequencies as an object
+freqCalculator.writeToFile(path);                        // Will write results to file at path. Default path exists.
 ```
 
 
@@ -63,7 +65,7 @@ sid   cid      pos alt nalt ref nref
 
 ## Support
 
-If you have any problem or suggestion please open an issue [here](https://github.com/DennisSchwartz/allele-freq/issues).
+If you have any problem or suggestions please open an issue [here](https://github.com/DennisSchwartz/allele-frequencies/issues).
 
 ## License 
 
